@@ -45,6 +45,7 @@ return {
                     "// - Register a major number using register_chrdev().",
                     "// - Create device class with class_create().",
                     "// - Create device node with device_create().",
+                    "// - Check IS_ERR(), destroy and unregister, return PTR_ERR().",
                     "// - ioremap() hardware memory region.",
                     "// - Handle errors with cleanup: destroy device/class, unregister.",
                     "// - Return 0 if success, or error code on failure.",
