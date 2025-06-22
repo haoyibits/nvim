@@ -79,7 +79,7 @@ return {
         ls.add_snippets("make", {
             s("kernelmake", {
                 t({
-                    "obj-m += led_driver.o",
+                    "obj-m += my_module.o",
                     "",
                     "KDIR := /lib/modules/$(shell uname -r)/build",
                     "PWD  := $(shell pwd)",
