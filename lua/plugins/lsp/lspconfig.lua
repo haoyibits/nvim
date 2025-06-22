@@ -13,6 +13,11 @@ return {
 		local mason_lspconfig = require('mason-lspconfig')
 		local cmp_nvim_lsp = require('cmp_nvim_lsp')
 		local keymap = vim.keymap
+		lspconfig.clangd.setup({
+			cmd = { "clangd", "--function-arg-placeholders=false" },
+			capabilities = require('cmp_nvim_lsp').default_capabilities(),
+		  })
+		  
 
 		-- Custom keybinds when LSP server attaches to buffer
 		vim.api.nvim_create_autocmd('LspAttach', {
