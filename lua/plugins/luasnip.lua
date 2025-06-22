@@ -64,18 +64,35 @@ return {
                 })
             }),
         })
-    ls.add_snippets("c", {
-        s("procsemplan", {
-            t({
-                " // Use mmap() to share unnamed semaphores.",
-                " // sem_init() with value 0 to block dependent steps.",
-                " // fork() to create processes A, B, C.",
-                " // Use sem_post/sem_wait to enforce execution order.",
-                " // Parent waits and then cleans up.",
-                ""
-            })
-        }),
-    })
+        ls.add_snippets("c", {
+            s("procsemplan", {
+                t({
+                    " // Use mmap() to share unnamed semaphores.",
+                    " // sem_init() with value 0 to block dependent steps.",
+                    " // fork() to create processes A, B, C.",
+                    " // Use sem_post/sem_wait to enforce execution order.",
+                    " // Parent waits and then cleans up.",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("make", {
+            s("kernelmake", {
+                t({
+                    "obj-m += led_driver.o",
+                    "",
+                    "KDIR := /lib/modules/$(shell uname -r)/build",
+                    "PWD  := $(shell pwd)",
+                    "",
+                    "all:",
+                    "\tmake -C $(KDIR) M=$(PWD) modules",
+                    "",
+                    "clean:",
+                    "\trm -f *.o *.ko *.mod.* *.symvers *.order",
+                    ""
+                })
+            }),
+        })
         ls.add_snippets("c", {
             s("osmain", {
                 t({
