@@ -23,11 +23,59 @@ return {
                     "#include <fcntl.h>",
                     "#include <errno.h>",
                     "#include <string.h>",
+                    "#include <sys/mman.h>",
+                    "#include <semaphore.h>",
+                    "#include <pthread.h>",
                     ""
                 })
             }),
         })
-
+        ls.add_snippets("c", {
+            s("oskernelinclude", {
+                t({
+                    "#include <linux/atomic.h>",
+                    "#include <linux/cdev.h>",
+                    "#include <linux/delay.h>",
+                    "#include <linux/device.h>",
+                    "#include <linux/fs.h>",
+                    "#include <linux/init.h>",
+                    "#include <linux/io.h>",
+                    "#include <linux/module.h>",
+                    "#include <linux/printk.h>",
+                    "#include <linux/types.h>",
+                    "#include <linux/uaccess.h>",
+                    "#include <linux/version.h>",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("threadplan", {
+                t({
+                    " // Parse inputs (e.g., array size, thread count).",
+                    " // Allocate data and thread info structs.",
+                    " // Divide work among threads (start/end indices).",
+                    " // Create threads with pthread_create().",
+                    " // Each thread does its chunk of work.",
+                    " // Join threads with pthread_join().",
+                    " // Combine partial results if needed.",
+                    " // Free memory and exit.",
+                    ""
+                })
+            }),
+        })
+    ls.add_snippets("c", {
+        s("procsemplan", {
+            t({
+                " // Use mmap() to share unnamed semaphores.",
+                " // sem_init() with value 0 to block dependent steps.",
+                " // fork() to create processes A, B, C.",
+                " // Use sem_post/sem_wait to enforce execution order.",
+                " // Parent waits and then cleans up.",
+                ""
+            })
+        }),
+    })
         ls.add_snippets("c", {
             s("osmain", {
                 t({
