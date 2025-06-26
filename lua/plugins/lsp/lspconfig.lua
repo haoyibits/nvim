@@ -60,7 +60,7 @@ return {
 			['lua_ls'] = function()
 				lspconfig.lua_ls.setup({
 					capabilities = capabilities,
-					handlers = no_diagnostics,
+					--handlers = no_diagnostics,
 					settings = {
 						Lua = {
 							diagnostics = { globals = { 'vim' } },
