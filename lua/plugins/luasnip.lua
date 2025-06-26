@@ -73,7 +73,7 @@ return {
                     "int shm_id = shmget(IPC_PRIVATE, sizeof(my_struct_t), IPC_CREAT | 0666);",
                     "int *shm_ptr = shmat(shm_id, NULL, 0);",
                     "char *shm_ptr = (char *)shmat(shm_id, NULL, 0);",
-                    "sprintf(shm_ptr, "Hello, World!");",
+                    "sprintf(shm_ptr, \"Hello, World!\");",
                     "shmdt(shm_ptr);",
                     "shmctl(shm_id, IPC_RMID, NULL);",
                     ""
@@ -90,7 +90,7 @@ return {
                     "int msg_id = msgget(IPC_PRIVATE, IPC_CREAT | 0666);",
                     "mymsg msg;",
                     "msg.mtype = 1;",
-                    "strcpy(msg.mtext, "Hello, World!");",
+                    "strcpy(msg.mtext, \"Hello, World!\");",
                     "msgsnd(msg_id, &msg, sizeof(msg.mtext), 0);",
                     "msgrcv(msg_id, &msg, sizeof(msg.mtext), 1, 0);",
                     "msgctl(msg_id, IPC_RMID, NULL);",
@@ -104,7 +104,7 @@ return {
                     "int pipe_fd[2];",
                     "close(pipe_fd[0]);// Close read end",
                     "close(pipe_fd[1]);// Close write end",
-                    "write(pipe_fd[1], "Hello, World!", 13);",
+                    "write(pipe_fd[1], \"Hello, World!\", 13);",
                     "char buffer[100];",
                     "read(pipe_fd[0], buffer, sizeof(buffer));",
                     ""
@@ -114,15 +114,15 @@ return {
         ls.add_snippets("c", {
             s("osfifo", {
                 t({
-                    "mkfifo("my_fifo", 0666);",
-                    "int fd = open("my_fifo", O_WRONLY);",
-                    "write(fd, "Hello, World!", 13);",
+                    "mkfifo(\"my_fifo\", 0666);",
+                    "int fd = open(\"my_fifo\", O_WRONLY);",
+                    "write(fd, \"Hello, World!\", 13);",
                     "close(fd);",
-                    "fd = open("my_fifo", O_RDONLY);",
+                    "fd = open(\"my_fifo\", O_RDONLY);",
                     "char buffer[100];",
                     "read(fd, buffer, sizeof(buffer));",
                     "close(fd);",
-                    "unlink("my_fifo");// unlink only once",
+                    "unlink(\"my_fifo\");// unlink only once",
                     ""
                 })
             }),
