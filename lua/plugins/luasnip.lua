@@ -26,6 +26,179 @@ return {
                     "#include <sys/mman.h>",
                     "#include <semaphore.h>",
                     "#include <pthread.h>",
+                    "#include <signal.h>",
+                    "#include <msg.h>",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("osexecvp", {
+                t({
+                    "char *args[] = {"ls", "-l", NULL};",
+                    "execvp("ls", args);",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("osthread", {
+                t({
+                    "void *thread_function(void *arg) {",
+                    "   thread_data *data = (struct thread_data *)arg;",
+                    "   // Thread work here",
+                    "   pthrread_exit(NULL);",
+                    "}",
+                    "pthread_t thread;",
+                    "pthread_create(&thread, NULL, thread_function, &data);",
+                    "pthread_join(thread, NULL);",
+
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("ostypedef", {
+                t({
+                    "typedef struct {",
+                    "    int field1;",
+                    "} my_struct_t;",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("osshm", {
+                t({
+                    "int shm_id = shmget(IPC_PRIVATE, sizeof(my_struct_t), IPC_CREAT | 0666);",
+                    "int *shm_ptr = shmat(shm_id, NULL, 0);",
+                    "char *shm_ptr = (char *)shmat(shm_id, NULL, 0);",
+                    "sprintf(shm_ptr, "Hello, World!");",
+                    "shmdt(shm_ptr);",
+                    "shmctl(shm_id, IPC_RMID, NULL);",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("osmsg", {
+                t({
+                    "typedef struct {",
+                    "    long mtype;",
+                    "    char mtext[100];",
+                    "} mymsg;",
+                    "int msg_id = msgget(IPC_PRIVATE, IPC_CREAT | 0666);",
+                    "mymsg msg;",
+                    "msg.mtype = 1;",
+                    "strcpy(msg.mtext, "Hello, World!");",
+                    "msgsnd(msg_id, &msg, sizeof(msg.mtext), 0);",
+                    "msgrcv(msg_id, &msg, sizeof(msg.mtext), 1, 0);",
+                    "msgctl(msg_id, IPC_RMID, NULL);",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("ospipe", {
+                t({
+                    "int pipe_fd[2];",
+                    "close(pipe_fd[0]);// Close read end",
+                    "close(pipe_fd[1]);// Close write end",
+                    "write(pipe_fd[1], "Hello, World!", 13);",
+                    "char buffer[100];",
+                    "read(pipe_fd[0], buffer, sizeof(buffer));",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("osfifo", {
+                t({
+                    "mkfifo("my_fifo", 0666);",
+                    "int fd = open("my_fifo", O_WRONLY);",
+                    "write(fd, "Hello, World!", 13);",
+                    "close(fd);",
+                    "fd = open("my_fifo", O_RDONLY);",
+                    "char buffer[100];",
+                    "read(fd, buffer, sizeof(buffer));",
+                    "close(fd);",
+                    "unlink("my_fifo");// unlink only once",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("ossigint", {
+                t({
+                    "void sigint_handler(int signum) {",
+                    "    // Handle SIGINT here",
+                    "}",
+                    "signal(SIGINT, sigint_handler);",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("ossigusr", {
+                t({
+                    "void sigusr1_handler(int signum) {",
+                    "    // Handle SIGUSR1 here",
+                    "}",
+                    "signal(SIGUSR1, sigusr1_handler);",
+                    "kill(getppid(), SIGUSR1);",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("ossemthread", {
+                t({
+                    "sem_t sem;",
+                    "sem_init(&sem, 0, 0);",
+                    "sem_wait(&sem);",
+                    "sem_post(&sem);",
+                    "sem_destroy(&sem);,
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("ossemprocess", {
+                t({
+                    "sem_t *sem = mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED| MAP_ANONYMOUS, -1, 0);",
+                    "sem_init(sem, 1, 0);",
+                    "sem_wait(sem);",
+                    "sem_post(sem);",
+                    "sem_destroy(sem);",
+                    "munmap(sem, sizeof(sem_t));",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("osthreadmutexcond", {
+                t({
+                    "pthread_mutex_t mutex;",
+                    "pthread_cond_t cond;",
+                    "pthread_mutex_init(&mutex, NULL);",
+                    "pthread_cond_init(&cond, NULL);",
+                    "",
+                    "// Thread function",
+                    "void *thread_function(void *arg) {",
+                    "    pthread_mutex_lock(&mutex);",
+                    "    // Wait for condition",
+                    "    pthread_cond_wait(&cond, &mutex);",
+                    "    // Do work after condition is signaled",
+                    "    pthread_mutex_unlock(&mutex);",
+                    "}",
+                    "",
+                    "// Signal condition from another thread",
+                    "pthread_mutex_lock(&mutex);",
+                    "pthread_cond_signal(&cond);",
+                    "pthread_mutex_unlock(&mutex);",
+                    "",
+                    "pthread_mutex_destroy(&mutex);",
+                    "pthread_cond_destroy(&cond);",
                     ""
                 })
             }),
