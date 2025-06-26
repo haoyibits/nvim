@@ -27,7 +27,7 @@ return {
                     "#include <semaphore.h>",
                     "#include <pthread.h>",
                     "#include <signal.h>",
-                    "#include <msg.h>",
+                    "#include <sys/msg.h>",
                     ""
                 })
             }),
