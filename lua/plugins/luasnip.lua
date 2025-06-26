@@ -139,6 +139,19 @@ return {
             }),
         })
         ls.add_snippets("c", {
+            s("ossigalarm", {
+                t({
+                    "void sigalrm_handler(int signum) {",
+                    "    // Handle SIGALRM here",
+                    "}",
+                    "signal(SIGALRM, sigalrm_handler);",
+                    "alarm(5); // Set alarm for 5 seconds",
+                    "pause(); // Wait for signal",
+                    ""
+                })
+            }),
+        })
+        ls.add_snippets("c", {
             s("ossigusr", {
                 t({
                     "void sigusr1_handler(int signum) {",
