@@ -35,8 +35,8 @@ return {
         ls.add_snippets("c", {
             s("osexecvp", {
                 t({
-                    "char *args[] = {"ls", "-l", NULL};",
-                    "execvp("ls", args);",
+                    "char *args[] = {\"ls\", \"-l\", NULL};",
+                    "execvp(\"ls\", args);",
                     ""
                 })
             }),
