@@ -47,7 +47,7 @@ return {
                     "void *thread_function(void *arg) {",
                     "   thread_data *data = (struct thread_data *)arg;",
                     "   // Thread work here",
-                    "   pthrread_exit(NULL);",
+                    "   pthread_exit(NULL);",
                     "}",
                     "pthread_t thread;",
                     "pthread_create(&thread, NULL, thread_function, &data);",
@@ -70,7 +70,7 @@ return {
         ls.add_snippets("c", {
             s("osshm", {
                 t({
-                    "int shm_id = shmget(IPC_PRIVATE, sizeof(my_struct_t), IPC_CREAT | 0666);",
+                    "int shm_id = shmget(IPC_PRIVATE, sizeof(), IPC_CREAT | 0666);",
                     "int *shm_ptr = shmat(shm_id, NULL, 0);",
                     "char *shm_ptr = (char *)shmat(shm_id, NULL, 0);",
                     "sprintf(shm_ptr, \"Hello, World!\");",
@@ -91,11 +91,24 @@ return {
                     "mymsg msg;",
                     "msg.mtype = 1;",
                     "strcpy(msg.mtext, \"Hello, World!\");",
-                    "msgsnd(msg_id, &msg, sizeof(msg.mtext), 0);",
+                    "msgsnd(msg_id, &msg, strlen(msg.mtext) + 1, 0);",
                     "msgrcv(msg_id, &msg, sizeof(msg.mtext), 1, 0);",
                     "msgctl(msg_id, IPC_RMID, NULL);",
                     ""
                 })
+            }),
+        })
+        ls.add_snippets("c", {
+            s("ossigwait", {
+                t({
+                    "sigset_t set;",
+                    "sigemptyset(&set);",
+                    "sigaddset(&set, SIGUSR1);",
+                    "sigaddset(&set, SIGUSR2);",
+                    "sigprocmask(SIG_BLOCK, &set, NULL);",
+                    "int sig = 0;",
+                    "sigwait(&set, &sig);",
+                }),
             }),
         })
         ls.add_snippets("c", {
@@ -193,8 +206,6 @@ return {
                 t({
                     "pthread_mutex_t mutex;",
                     "pthread_cond_t cond;",
-                    "pthread_mutex_init(&mutex, NULL);",
-                    "pthread_cond_init(&cond, NULL);",
                     "",
                     "// Thread function",
                     "void *thread_function(void *arg) {",
@@ -210,6 +221,11 @@ return {
                     "pthread_cond_signal(&cond);",
                     "pthread_mutex_unlock(&mutex);",
                     "",
+                    "pthread_t thread;",
+                    "pthread_mutex_init(&mutex, NULL);",
+                    "pthread_cond_init(&cond, NULL);",
+                    "pthread_create(&thread, NULL, thread_function, NULL);",
+                    "pthread_join(thread, NULL);",
                     "pthread_mutex_destroy(&mutex);",
                     "pthread_cond_destroy(&cond);",
                     ""
@@ -264,28 +280,161 @@ return {
             }),
         })
         ls.add_snippets("c", {
-            s("ioctlhdr", {
-                t({
-                    "#ifndef DEVICE_IOCTL_H",
-                    "#define DEVICE_IOCTL_H",
-                    "",
-                    "#include <linux/ioctl.h>",
-                    "#include <linux/types.h>",
-                    "",
-                    "// Configuration structure passed from userspace to kernel",
-                    "struct device_config {",
-                    "    uint8_t enable;",       -- Replace or add your fields
-                    "    uint8_t mode;",
-                    "    uint8_t level;",
-                    "};",
-                    "",
-                    "#define DEVICE_IOCTL_MAGIC  0xF1",
-                    "#define DEVICE_IOCTL_CONFIG _IOW(DEVICE_IOCTL_MAGIC, 0, struct device_config)",
-                    "",
-                    "#endif // DEVICE_IOCTL_H",
-                    ""
-                })
-            }),
+        -- 头文件部分
+        s("ioctlh", {
+            t({
+            "#ifndef DEVICE_IOCTL_H",
+            "#define DEVICE_IOCTL_H",
+            "",
+            "#include <linux/ioctl.h>",
+            "",
+            "#define IOCTL_MAGIC 'X'",
+            "",
+            "//#define IOCTL_CMD_1 _IOW(IOCTL_MAGIC, 1, int)",
+            "//#define IOCTL_CMD_2 _IOW(IOCTL_MAGIC, 2, int)",
+            "#define IOCTL_CONFIG _IOW(IOCTL_MAGIC, 0, struct device_config)",
+            "",
+            "struct device_config {",
+            "    uint8_t enable;",
+            "    uint8_t mode;",
+            "    uint8_t level;",  -- 保留字段以对齐结构体
+            "    uint8_t option;",
+            "};",
+            "#endif // DEVICE_IOCTL_H",
+            ""
+            })
+        }),
+
+        -- 声明和模块元信息部分
+        s("ioctldef", {
+            t({
+            "#include <linux/module.h>",
+            "#include <linux/fs.h>",
+            "#include <linux/uaccess.h>",
+            "#include <linux/cdev.h>",
+            "#include <linux/device.h>",
+            "#include <linux/io.h>",
+            "#include \"device_ioctl.h\"",
+            "",
+            "#define DEVICE_NAME      \"mydevice\"",
+            "#define CLASS_NAME       \"myclass\"",
+            "#define DEVICE_BASE      0xDEADBEEF",
+            "#define DEVICE_REG_SIZE  4",
+            "",
+            "static void __iomem *ctrl_reg;",
+            "static int major_number;",
+            "static struct class*  dev_class = NULL;",
+            "static struct device* dev_device = NULL;",
+            "",
+            "module_init(dev_init);",
+            "module_exit(dev_exit);",
+            "",
+            "MODULE_LICENSE(\"GPL\");",
+            "MODULE_AUTHOR(\"Haoyi Chen\");",
+            "MODULE_DESCRIPTION(\"kernel module\");",
+            ""
+            })
+        }),
+
+        -- ioctl 实现部分
+        s("ioctldev", {
+            t({
+                "static long dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)",
+                "{",
+                "    struct device_config cfg;",
+                "    u32 reg_value = 0;",
+                "",
+                "    // Check if the ioctl command is supported",
+                "    if (cmd != DEVICE_IOCTL_CONFIG)",
+                "        return -EINVAL;",
+                "",
+                "    // Safely copy the config structure from userspace",
+                "    if (copy_from_user(&cfg, (void __user *)arg, sizeof(cfg)))",
+                "        return -EFAULT;",
+                "",
+                "    // Validate input fields based on device constraints",
+                "    if (cfg.enable > 1 || cfg.mode > 3 || cfg.level > 15 || cfg.option > 1)",
+                "        return -EINVAL;",
+                "",
+                "    // Encode the configuration into the register value",
+                "    reg_value |= (cfg.enable & 0x1) << 0;",
+                "    reg_value |= (cfg.mode   & 0x3) << 1;",
+                "    reg_value |= (cfg.level  & 0xF) << 3;",
+                "    reg_value |= (cfg.option & 0x1) << 7;",
+                "",
+                "    // Write the value to the memory-mapped hardware register",
+                "    iowrite32(reg_value, ctrl_reg);",
+                "",
+                "    return 0;",
+                "}",
+                ""
+            })
+        }),
+
+        -- file_operations 部分
+        s("ioctlfops", {
+            t({
+            "static const struct file_operations fops = {",
+            "    .owner = THIS_MODULE,",
+            "    .unlocked_ioctl = dev_ioctl,",
+            "};",
+            ""
+            })
+        }),
+
+        -- init 部分
+        s("ioctlinit", {
+            t({
+            "static int __init dev_init(void)",
+            "{",
+            "    major_number = register_chrdev(0, DEVICE_NAME, &fops);",
+            "    if (major_number < 0) {",
+            "        pr_err(\"Failed\\n\");",
+            "        return major_number;",
+            "    }",
+            "",
+            "    dev_class = class_create(THIS_MODULE, CLASS_NAME);",
+            "    if (IS_ERR(dev_class)) {",
+            "        unregister_chrdev(major_number, DEVICE_NAME);",
+            "        return PTR_ERR(dev_class);",
+            "    }",
+            "",
+            "    dev_device = device_create(dev_class, NULL, MKDEV(major_number, 0), NULL, DEVICE_NAME);",
+            "    if (IS_ERR(dev_device)) {",
+            "        class_destroy(dev_class);",
+            "        unregister_chrdev(major_number, DEVICE_NAME);",
+            "        return PTR_ERR(dev_device);",
+            "    }",
+            "",
+            "    ctrl_reg = ioremap(DEVICE_BASE, DEVICE_REG_SIZE);",
+            "    if (!ctrl_reg) {",
+            "        device_destroy(dev_class, MKDEV(major_number, 0));",
+            "        class_destroy(dev_class);",
+            "        unregister_chrdev(major_number, DEVICE_NAME);",
+            "        return -ENOMEM;",
+            "    }",
+            "",
+            "    pr_info(\"device loaded successfully\\n\");",
+            "    return 0;",
+            "}",
+            ""
+            })
+        }),
+
+        -- exit 部分
+        s("ioctlexit", {
+            t({
+            "static void __exit dev_exit(void)",
+            "{",
+            "    iounmap(ctrl_reg);",
+            "    device_destroy(dev_class, MKDEV(major_number, 0));",
+            "    class_destroy(dev_class);",
+            "    unregister_chrdev(major_number, DEVICE_NAME);",
+            "    pr_info(\"device unloaded\\n\");",
+            "}",
+            ""
+            })
+        })
         })
         ls.add_snippets("c", {
             s("threadplan", {
