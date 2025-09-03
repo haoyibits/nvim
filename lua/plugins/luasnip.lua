@@ -279,7 +279,7 @@ return {
                 })
             }),
         })
-        ls.add_snippets("c", {
+        ls.add_snippets("all", {
         -- 头文件部分
         s("ioctlh", {
             t({
@@ -464,7 +464,7 @@ return {
             }),
         })
         ls.add_snippets("make", {
-            s("kernelmake", {
+            s("ioctlmake", {
                 t({
                     "obj-m += my_module.o",
                     "",
