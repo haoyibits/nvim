@@ -45,7 +45,7 @@ return {
             s("osthread", {
                 t({
                     "void *thread_function(void *arg) {",
-                    "   thread_data *data = (struct thread_data *)arg;",
+                    "   thread_data *data = (thread_data *)arg;",
                     "   // Thread work here",
                     "   pthread_exit(NULL);",
                     "}",
@@ -115,9 +115,13 @@ return {
             s("ospipe", {
                 t({
                     "int pipe_fd[2];",
+                    "if (pipe(pipe_fd) == -1) {",
+                    "    perror(\"pipe\");",
+                    "    exit(1);",
+                    "}",
                     "close(pipe_fd[0]);// Close read end",
+                    "write(pipe_fd[1], &a, sizeof(int));",
                     "close(pipe_fd[1]);// Close write end",
-                    "write(pipe_fd[1], \"Hello, World!\", 13);",
                     "char buffer[100];",
                     "read(pipe_fd[0], buffer, sizeof(buffer));",
                     ""
